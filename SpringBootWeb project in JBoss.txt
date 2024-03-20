@@ -1,0 +1,76 @@
+SpringBootWeb project in JBoss:
+
+1. Creating SpringBootStarterWeb project with WAR deployment:
+	POM.xml dependencies are: spring-boot-starter-tomcat>> provided scope,
+							spring-boot-starter-web
+
+2. jdk 1.8>> spring boot version 2.7.10
+3. sdk version of project in project structure should be 1.8
+
+4. create web.xml in application.properties as following content
+<security-constraint>
+    <web-resource-collection>
+        <web-resource-name>Secured Area</web-resource-name>
+        <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>user</role-name>
+    </auth-constraint>
+</security-constraint>
+
+<security-role>
+<role-name>user</role-name>
+</security-role>
+
+<login-config>
+<auth-method>BASIC</auth-method>
+<realm-name>ApplicationRealm</realm-name>
+</login-config>
+
+
+5. create jboss-web.xml in application.properties as following content:
+<jboss-web>
+    <security-domain>java:/jaas/ApplicationRealm</security-domain>
+</jboss-web>
+
+
+6. create RestController with mappings
+
+7. server.port=8082 in application.properties it can be user defined but number should be same in standalone.xml of jboss http port, that we'll see further steps
+
+8. run and check in intelliJ
+
+9. then build it by clean package maven goals
+eg: 
+	sample-spring-jboss-0.0.1-SNAPSHOT.war
+
+10. once it all done copy the war file from target to deployments folder of jboss>> standalone
+
+11. then we need check few things in standalone.xml
+	a. security-realm name of ApplicationRealm should be as follows:
+		<security-realm name="ApplicationRealm">
+    <authentication>
+        <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
+        <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+    </authentication>
+    <authorization map-groups-to-roles="false">
+        <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
+    </authorization>
+</security-realm>
+
+	b. then check the port of http in standalone.xml:
+		the port of http same as you mentioned in your project's application.properties or your project server.port should be same as http port in standalone.xml
+        <socket-binding name="http" port="${jboss.http.port:8082}"/>
+
+	c. once port check done then we need to check application-user.properties should have one user with proper user name and password
+		eg:
+		razak=Razak@123
+
+	d. then check role of users in application-roles.properties
+		eg:
+		razak=admin,user,manager
+
+once all are done then start the jboss server
+
+and visit http://127.0.0.1:8082/sample-spring-jboss-0.0.1-SNAPSHOT/
+to see the mappings
